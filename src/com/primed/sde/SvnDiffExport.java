@@ -5,6 +5,7 @@ import java.io.File;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.auth.BasicAuthenticationManager;
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
+import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl;
 import org.tmatesoft.svn.core.wc.ISVNOptions;
 import org.tmatesoft.svn.core.wc.SVNDiffClient;
 import org.tmatesoft.svn.core.wc.SVNUpdateClient;
@@ -13,6 +14,7 @@ import org.tmatesoft.svn.core.wc.SVNWCUtil;
 
 import com.primed.sde.command.Diff;
 import com.primed.sde.command.Export;
+import com.primed.sde.command.ExportAndZipRevision;
 import com.primed.sde.command.Revision;
 import com.primed.sde.command.Zip;
 
@@ -38,7 +40,7 @@ import com.primed.sde.command.Zip;
  */
 public class SvnDiffExport {
 
-	enum Command { diff, export, revision, zip };
+	enum Command { diff, export, revision, zip, export_zip };
 
 	public static void main(String[] args) throws Exception {
 		Long start = System.currentTimeMillis();
@@ -50,6 +52,7 @@ public class SvnDiffExport {
 		ISVNOptions options = SVNWCUtil.createDefaultOptions(true);
 		BasicAuthenticationManager bam = new BasicAuthenticationManager(svnUsername, svnPassword);
 		DAVRepositoryFactory.setup();
+		SVNRepositoryFactoryImpl.setup();
 		
 		Command command = Command.valueOf(args[0]);
 		switch(command) {
@@ -88,6 +91,16 @@ public class SvnDiffExport {
 					throw new RuntimeException("zip target dir/file: "+args[1]+" not found."); 
 				}
 				new Zip(zipTarget).execute();
+				break;
+			
+			case export_zip:
+				System.out.println("export_zip..");
+
+				SVNURL srcBranch = SVNURL.parseURIEncoded(args[1]);
+				String revisionNumber = args[2];
+				
+				new ExportAndZipRevision(bam, options, srcBranch, revisionNumber).execute();
+				
 				break;
 				
 		}

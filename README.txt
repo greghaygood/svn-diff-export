@@ -40,3 +40,13 @@ java -jar svn-diff-export-1.0.jar zip <directory-to-zip>
 TODO
 ----
 Unit tests. Tidy up docs.
+
+
+CHANGES FROM GREG HAYGOOD
+-------------------------
+
+Added export_zip option to do everything in one step, pulling based on a
+revision number from a single branch instead of a tagged branch.
+
+Create an export-REVISIONNUMBER.zip of the exported files
+java -jar svn-diff-export-1.0.jar export_zip <branch-url> <revision-number>

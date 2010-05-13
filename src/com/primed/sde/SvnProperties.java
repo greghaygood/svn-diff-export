@@ -26,6 +26,7 @@ public class SvnProperties extends Properties {
 		} catch (FileNotFoundException e) {
 			System.out.println("svn.properties file not found. Using user: robot, pw: robot.");
 		}
+		System.err.println("using credentials: " + getSvnUsername() + "/" + getSvnPassword());
 	}
 	
 	/**

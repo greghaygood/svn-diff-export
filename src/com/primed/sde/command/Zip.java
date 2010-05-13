@@ -17,6 +17,7 @@ import java.util.zip.ZipOutputStream;
 public class Zip {
 
 	private final File target;
+	private final String zipFileName;
 
 	/**
 	 * Creates a .zip file of the target directory.
@@ -24,7 +25,12 @@ public class Zip {
 	 * @param target
 	 */
 	public Zip(File target) {
+		this(target, target.getName() + ".zip");
+	}
+
+	public Zip(File target, String zipFileName) {
 		this.target = target;
+		this.zipFileName = zipFileName;
 	}
 
 	/**
@@ -35,9 +41,9 @@ public class Zip {
 	 * @throws IOException
 	 */
 	public void execute() throws IOException {
-		String zipPath = target.getParentFile().getPath() + "/";
-		String zipName = target.getName() + ".zip";
-		ZipOutputStream zos = new ZipOutputStream(new FileOutputStream( zipPath + zipName ));
+		String zipPath = target.getAbsoluteFile().getParentFile().getPath() + "/";
+		//String zipName = target.getName() + ".zip";
+		ZipOutputStream zos = new ZipOutputStream(new FileOutputStream( zipPath + zipFileName ));
 		zip(target, target, zos);
 		zos.close();
 	}

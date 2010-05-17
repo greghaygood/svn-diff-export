@@ -42,7 +42,7 @@ import java.util.ArrayList;
 public class SvnDiffExport {
 
     enum Command {
-        diff, export, revision, zip, export_zip
+        diff, export, revision, zip, export_zip, export_zips
     };
 
     public static void main(String[] args) throws Exception {
@@ -69,6 +69,7 @@ public class SvnDiffExport {
         } else {
 
             Command command = Command.valueOf(args[0]);
+            System.err.println("Command: " + command);
             switch (command) {
 
                 case diff:
@@ -107,6 +108,7 @@ public class SvnDiffExport {
                     new Zip(zipTarget).execute();
                     break;
 
+                case export_zips:
                 case export_zip:
                     System.out.println("export_zip");
 
@@ -132,7 +134,8 @@ public class SvnDiffExport {
                     }
 
                     for (String rev: al) {
-                        new ExportAndZipRevision(bam, options, srcBranch, rev).execute();
+                        System.err.println("exporting revision " + rev);
+                        new ExportAndZipRevision(bam, options, srcBranch, rev, command == Command.export_zip).execute();
                     }
 
 

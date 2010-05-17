@@ -27,6 +27,7 @@ public class SvnProperties extends Properties {
 			System.out.println("svn.properties file not found. Using user: robot, pw: robot.");
 		}
 		System.err.println("using credentials: " + getSvnUsername() + "/" + getSvnPassword());
+                System.err.println("default URL: " + getSvnUrl());
 	}
 	
 	/**
@@ -43,5 +44,9 @@ public class SvnProperties extends Properties {
 	 */
 	public String getSvnPassword() {
 		return getProperty("svn.password", "robot");
+	}
+
+        public String getSvnUrl() {
+		return getProperty("svn.url", "");
 	}
 }

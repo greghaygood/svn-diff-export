@@ -58,10 +58,10 @@ public class SvnDiffExport {
         DAVRepositoryFactory.setup();
         SVNRepositoryFactoryImpl.setup();
 
-        System.err.println("arg length: " + args.length);
-        for (String arg : args) {
-            System.err.println("arg: " + arg);
-        }
+//        System.err.println("arg length: " + args.length);
+//        for (String arg : args) {
+//            System.err.println("arg: " + arg);
+//        }
         
         if (args.length == 0) {
             System.out.println("Arguments: <command> <command options>");

@@ -148,7 +148,7 @@ public class ExportAndZipRevision implements ISVNDiffStatusHandler {
 			
 		} else if (operation.equalsIgnoreCase("M") || operation.equalsIgnoreCase("A")) {
 			System.err.println("exporting path: " + f.toString());
-			updateClient.doExport(location, d, previousRevision, revision, "native", true, SVNDepth.EMPTY);		
+			updateClient.doExport(location, d, revision, revision, "native", true, SVNDepth.EMPTY);
 
 		} else {
 			throw new IOException("Error! Malformed operation: " + operation);

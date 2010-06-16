@@ -18,6 +18,12 @@ import com.primed.sde.command.ExportAndZipRevision;
 import com.primed.sde.command.Revision;
 import com.primed.sde.command.Zip;
 import java.util.ArrayList;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+
 
 /**
  * Utility project used to patch a baseline export to a newer branch. 
@@ -45,15 +51,34 @@ public class SvnDiffExport {
         diff, export, revision, zip, export_zip, export_zips
     };
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] fullArgs) throws Exception {
         Long start = System.currentTimeMillis();
 
-        SvnProperties properties = new SvnProperties(new File("svn.properties"));
+        Options options = new Options();
+        options.addOption("f", "file", true, "config file with svn information");
+        options.addOption("u", "url", true, "the SVN URL on which to operate");
+        options.addOption("i", "input", true, "input file");
+        options.addOption("o", "output", true, "output file or folder (depending on operation)");
+
+        //        options.addOption("u1", "url1", true, "the first SVN URL on which to operate");
+//        options.addOption("u2", "url2", true, "the second SVN URL on which to operate");
+
+        options.addOption("1", "old", true, "the old (source) SVN URL on which to operate");
+        options.addOption("2", "new", true, "the new (destination) SVN URL on which to operate");
+
+        CommandLineParser parser = new GnuParser();
+        CommandLine cmd = parser.parse( options, fullArgs);
+
+        String propertiesFileName = cmd.getOptionValue("f", "svn.properties");
+
+        System.err.println("Using config file: " + propertiesFileName);
+
+        SvnProperties properties = new SvnProperties(new File(propertiesFileName));
         String svnUsername = properties.getSvnUsername();
         String svnPassword = properties.getSvnPassword();
         String svnDefaultUrl = properties.getSvnUrl();
 
-        ISVNOptions options = SVNWCUtil.createDefaultOptions(true);
+        ISVNOptions svnOptions = SVNWCUtil.createDefaultOptions(true);
         BasicAuthenticationManager bam = new BasicAuthenticationManager(svnUsername, svnPassword);
         DAVRepositoryFactory.setup();
         SVNRepositoryFactoryImpl.setup();
@@ -62,10 +87,17 @@ public class SvnDiffExport {
 //        for (String arg : args) {
 //            System.err.println("arg: " + arg);
 //        }
+
+        String[] args = cmd.getArgs();
+        for (String opt : args) {
+            //System.err.println("remaining arg: " + opt);
+        }
         
         if (args.length == 0) {
-            System.out.println("Arguments: <command> <command options>");
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp( "SvnDiffExport <cmd> <options>", options );
             System.out.println("Valid commands: diff, export, revision, zip, export_zip");
+
         } else {
 
             Command command = Command.valueOf(args[0]);
@@ -74,36 +106,36 @@ public class SvnDiffExport {
 
                 case diff:
                     System.out.println("diff..");
-                    SVNURL oldBranch = SVNURL.parseURIEncoded(args[1]);
-                    SVNURL newBranch = SVNURL.parseURIEncoded(args[2]);
-                    String diff = args[3];
-                    new Diff(new SVNDiffClient(bam, options), oldBranch, newBranch, diff).execute();
+                    SVNURL oldBranch = SVNURL.parseURIEncoded(cmd.getOptionValue("1"));
+                    SVNURL newBranch = SVNURL.parseURIEncoded(cmd.getOptionValue("2"));
+                    String diff = cmd.getOptionValue("o");
+                    new Diff(new SVNDiffClient(bam, svnOptions), oldBranch, newBranch, diff).execute();
                     break;
 
                 case export:
                     System.out.println("export..");
-                    File diffFile = new File(args[1]);
+                    File diffFile = new File(cmd.getOptionValue("i"));
                     if (!diffFile.exists()) {
                         throw new RuntimeException("diff file: " + args[1] + " not found.");
                     }
-                    String oldBranchURL = args[2];
-                    String newBranchURL = args[3];
-                    String exportTo = args[4];
-                    new Export(new SVNUpdateClient(bam, options), diffFile, oldBranchURL, newBranchURL, exportTo).execute();
+                    String oldBranchURL = cmd.getOptionValue("1");
+                    String newBranchURL = cmd.getOptionValue("2");
+                    String exportTo = cmd.getOptionValue("o");
+                    new Export(new SVNUpdateClient(bam, svnOptions), diffFile, oldBranchURL, newBranchURL, exportTo).execute();
                     break;
 
                 case revision:
                     System.out.println("revision..");
-                    SVNURL branch = SVNURL.parseURIEncoded(args[1]);
+                    SVNURL branch = SVNURL.parseURIEncoded(cmd.getOptionValue("u"));
                     String target = args[2];
-                    new Revision(new SVNWCClient(bam, options), branch, target).execute();
+                    new Revision(new SVNWCClient(bam, svnOptions), branch, target).execute();
                     break;
 
                 case zip:
                     System.out.println("zip..");
-                    File zipTarget = new File(args[1]);
+                    File zipTarget = new File(cmd.getOptionValue("o"));
                     if (!zipTarget.exists()) {
-                        throw new RuntimeException("zip target dir/file: " + args[1] + " not found.");
+                        throw new RuntimeException("zip target dir/file: " + cmd.getOptionValue("o") + " not found.");
                     }
                     new Zip(zipTarget).execute();
                     break;
@@ -112,30 +144,24 @@ public class SvnDiffExport {
                 case export_zip:
                     System.out.println("export_zip");
 
-                    SVNURL srcBranch = null;
-                    String revisionNumber = "";
-                    if (args.length == 2) {
-                        srcBranch = SVNURL.parseURIEncoded(svnDefaultUrl);
-                        revisionNumber = args[1];
-
-                    } else if (args.length == 3) {
-                        srcBranch = SVNURL.parseURIEncoded(args[1]);
-                        revisionNumber = args[2];
-                    }
+                    SVNURL srcBranch = SVNURL.parseURIEncoded(cmd.getOptionValue("u", svnDefaultUrl));;
 
                     ArrayList<String> al = new ArrayList<String>();
-                    if (revisionNumber.indexOf(",") > -1) {
+                    if (args[1].indexOf(",") > -1) {
                         System.err.println("exporting multiple revisions ...");
-                        for (String rev : revisionNumber.split(",")) {
+                        for (String rev : args[1].split(",")) {
                             al.add(rev);
                         }
                     } else {
-                        al.add(revisionNumber);
+                        String arg = null;
+                        for (int i=1; i<args.length; i++) {
+                            al.add(args[i]);
+                        }
                     }
 
                     for (String rev: al) {
                         System.err.println("exporting revision " + rev);
-                        new ExportAndZipRevision(bam, options, srcBranch, rev, command == Command.export_zips ).execute();
+                        new ExportAndZipRevision(bam, svnOptions, srcBranch, rev, command == Command.export_zips ).execute();
                     }
 
 

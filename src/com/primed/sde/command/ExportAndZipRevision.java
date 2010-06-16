@@ -100,6 +100,8 @@ public class ExportAndZipRevision implements ISVNDiffStatusHandler {
             cleanTargetFolder();
         }
 
+        new File(TARGET_FOLDER).mkdirs();
+
         SVNDiffClient diffClient = new SVNDiffClient(bam, options);
         diffClient.doDiffStatus(branch, previousRevision, branch, revision, SVNDepth.INFINITY, false, this);
 
@@ -163,6 +165,7 @@ public class ExportAndZipRevision implements ISVNDiffStatusHandler {
         String exportTo = TARGET_FOLDER + path.replaceFirst(branch.toString(), "");
         File f = new File(exportTo);
         File d = new File(f.getAbsolutePath().replaceFirst(f.getName(), ""));
+        System.err.println("exporting to: " + d.toString());
         d.mkdirs();
 
          SVNURL location= SVNURL.parseURIEncoded(path);

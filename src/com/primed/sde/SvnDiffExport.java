@@ -135,7 +135,7 @@ public class SvnDiffExport {
 
                     for (String rev: al) {
                         System.err.println("exporting revision " + rev);
-                        new ExportAndZipRevision(bam, options, srcBranch, rev, command == Command.export_zip).execute();
+                        new ExportAndZipRevision(bam, options, srcBranch, rev, command == Command.export_zips ).execute();
                     }
 
 

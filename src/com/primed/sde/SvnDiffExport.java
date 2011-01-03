@@ -147,15 +147,33 @@ public class SvnDiffExport {
                     SVNURL srcBranch = SVNURL.parseURIEncoded(cmd.getOptionValue("u", svnDefaultUrl));;
 
                     ArrayList<String> al = new ArrayList<String>();
+                    ArrayList<String> altemp = new ArrayList<String>();
                     if (args[1].indexOf(",") > -1) {
                         System.err.println("exporting multiple revisions ...");
                         for (String rev : args[1].split(",")) {
-                            al.add(rev);
+                            altemp.add(rev);
                         }
                     } else {
                         String arg = null;
                         for (int i=1; i<args.length; i++) {
-                            al.add(args[i]);
+                            altemp.add(args[i]);
+                        }
+                    }
+                    for (String rev: altemp) {
+                        if (rev.indexOf("-") > -1) {
+                            System.err.println("exporting a range ...");
+                            String[] revs = rev.split("-");
+                            if (revs.length != 2) {
+                              System.err.println("ERROR: invalid range given: " + rev);
+                              continue;
+                            }
+                            int range_start = Integer.parseInt(revs[0].trim());
+                            int range_end = Integer.parseInt(revs[1].trim());
+                            for (int i= range_start; i <= range_end; i++) {
+                                al.add("" + i);
+                            }
+                        } else {
+                            al.add(rev);
                         }
                     }
 

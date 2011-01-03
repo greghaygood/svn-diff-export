@@ -1,6 +1,22 @@
 ---------------
 Svn Diff Export
 ---------------
+
+Date: June 2010, January 2011
+By: Greg Haygood (ghaygood at gmail [dot] com)
+
+My workflow required a different combination of the below steps, where I wanted to specify 
+the set of commit numbers at once and get back the zip file(s) I needed to deploy.  So I
+modified Philip's code to chain these all together, pulling the SVN repository information
+from a .properties file in the current folder.  I also needed this to run on Windows, so
+doing everything within the Java program made it more portable.
+
+- Added support to pipeline all operations to yield a single zip file containing all changes
+- Also added support for passing multiple commit numbers individually (separated by commas) 
+and by range (separated by dashes) 
+
+BASED ON CODE FROM
+------------------
 Date: 25-JAN-2010
 Author: Philip Gloyne (philip.gloyne@gmail.com)
 
@@ -24,18 +40,23 @@ Can be found in releases/1.0/svn-diff-export.bat.example
 COMMANDS:
 ---------
 
-Create a diff.patch file
+* Create a diff.patch file
 java -jar svn-diff-export-1.0.jar diff <old-branch-url> <new-branch-url> <diff-file>
 
-Export each of the files described in the diff.patch to a target directory
+* Export each of the files described in the diff.patch to a target directory
 java -jar svn-diff-export-1.0.jar export <diff-file> <old-branch-url> <new-branch-url> <target-dir>
 
-Create a revision file (usually in a public folder - we put ours next to robots.txt)
+* Create a revision file (usually in a public folder - we put ours next to robots.txt)
 java -jar svn-diff-export-1.0.jar revision <new-branch-url> <revision-file-full-path>
 
-Create a .zip of the 'export' folder to push to the server
+* Create a .zip of the 'export' folder to push to the server
 java -jar svn-diff-export-1.0.jar zip <directory-to-zip>
 
+* Create a single .zip of multiple commit numbers
+java -jar svn-diff-export-1.0.jar export_zip <commit numbers>
+
+* Create a .zip of each commit number in a set
+java -jar svn-diff-export-1.0.jar export_zips <commit numbers>
 
 TODO
 ----
